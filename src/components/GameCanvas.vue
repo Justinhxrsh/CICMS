@@ -487,12 +487,24 @@ export default {
       ctx.fillStyle = isMe ? '#88ccff' : '#ffffff';
       ctx.fillText(p.name, px, py - 22);
 
+      // Health and Hunger bars
+      const barW = 32;
+      const barX = px - barW / 2;
+
+      // Hunger bar (smaller, orange)
+      if (p.hunger !== undefined && p.maxHunger > 0) {
+        const hBarY = py - 43;
+        const hPct = p.hunger / p.maxHunger;
+        ctx.fillStyle = 'rgba(0,0,0,0.5)';
+        ctx.fillRect(barX, hBarY, barW, 2);
+        ctx.fillStyle = '#ffaa44';
+        ctx.fillRect(barX, hBarY, barW * hPct, 2);
+      }
+
       // Health bar
       if (p.health !== undefined && p.maxHealth > 0) {
-        const barW = 32;
         const barH = 3;
-        const barX = px - barW / 2;
-        const barY = py - 38;
+        const barY = py - 39;
         const pct = p.health / p.maxHealth;
 
         ctx.fillStyle = 'rgba(0,0,0,0.5)';
@@ -594,11 +606,12 @@ export default {
         } else {
           options.push({ label: '🕳️ Dig here', action: () => wsService.action('dig', { args: [col, row] }) });
           
-          const hasWood = this.$store.state.inventory.items.some(i => i.defKey === 'WOOD');
+          const hasWood = this.$store.state.player.inventory.some(i => i.defKey === 'WOOD');
           if (hasWood) {
             options.push({ label: '🧱 Place Wood', action: () => wsService.action('place', { args: ['wood', col, row] }) });
           }
-          options.push({ label: '🏠 Build Shelter', action: () => wsService.action('house', { args: [] }) });
+          options.push({ label: '🏠 Build Small House (10 Wood)', action: () => wsService.action('house', { args: ['small'] }) });
+          options.push({ label: '🏰 Build Large House (20 Wood)', action: () => wsService.action('house', { args: ['large'] }) });
         }
       }
 

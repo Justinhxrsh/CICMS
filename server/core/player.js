@@ -31,6 +31,9 @@ export class Player {
         this.gold = 500;        // Starting gold
         this.attack = 5;
         this.defense = 2;
+        this.hunger = 100;      // Hunger (0-100)
+        this.maxHunger = 100;
+        this.hungerTimer = 0;
 
         // Skills (XP values)
         this.skills = {};
@@ -180,12 +183,44 @@ export class Player {
         if (!item || item.type !== 'consumable') return { success: false, message: 'Cannot consume that item.' };
 
         const def = ITEM_DEFS[item.defKey];
-        if (def && def.heals) {
-            this.health = Math.min(this.maxHealth, this.health + def.heals);
+        if (def) {
+            if (def.heals) {
+                this.health = Math.min(this.maxHealth, this.health + def.heals);
+            }
+            // Restore hunger (most foods restore 20-40)
+            const hungerRestore = def.heals ? def.heals : 20;
+            this.hunger = Math.min(this.maxHunger, this.hunger + hungerRestore);
         }
 
         this.removeItem(itemId, 1);
-        return { success: true, message: `Used ${item.name}. HP restored.` };
+        return { success: true, message: `Used ${item.name}. HP/Hunger restored.` };
+    }
+
+    // Periodic tick for health regen and hunger
+    tick(deltaMs) {
+        let changed = false;
+        this.hungerTimer += deltaMs;
+
+        // Hunger drops every 10 seconds (10000ms)
+        if (this.hungerTimer >= 10000) {
+            this.hungerTimer = 0;
+            if (this.hunger > 0) {
+                this.hunger -= 1;
+                changed = true;
+            } else {
+                // Starvation damage
+                this.health = Math.max(0, this.health - 2);
+                changed = true;
+            }
+
+            // Passive health regen if full
+            if (this.hunger > 80 && this.health < this.maxHealth) {
+                this.health = Math.min(this.maxHealth, this.health + 1);
+                changed = true;
+            }
+        }
+
+        return changed;
     }
 
     // Set movement path
@@ -259,6 +294,8 @@ export class Player {
             moving: this.moving,
             health: this.health,
             maxHealth: this.maxHealth,
+            hunger: this.hunger,
+            maxHunger: this.maxHunger,
         };
     }
 

@@ -1,8 +1,12 @@
 <template>
   <div class="emotion-detector" :class="{ active: isCapturing }">
-    <div class="video-container" v-show="isCapturing">
+    <!-- Visual removed to avoid duplicate video of self -->
+    <div class="video-container" v-show="false">
       <video ref="video" autoplay muted playsinline></video>
       <div class="emotion-overlay">{{ currentEmotion.toUpperCase() }}</div>
+    </div>
+    <div class="emotion-status" v-if="isCapturing">
+       🧠 Mood: <span class="mood-text">{{ currentEmotion || 'neutral' }}</span>
     </div>
     <button @click="toggleCapture" class="toggle-btn" :title="isCapturing ? 'Stop Emotion Sync' : 'Start Emotion Sync'">
       {{ isCapturing ? '🧠' : '👁️' }}
@@ -47,25 +51,21 @@ export default {
 
 <style scoped>
 .emotion-detector {
-  position: absolute;
-  top: 10px;
-  right: 10px;
   display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 10px;
-  z-index: 100;
+  align-items: center;
+  gap: 12px;
+  padding: 4px;
+}
+
+.emotion-status {
+  font-size: 12px;
+  color: #f5d44a;
+  font-weight: 600;
+  text-transform: capitalize;
 }
 
 .video-container {
-  width: 200px;
-  height: 150px;
-  background: #000;
-  border: 2px solid #f5d44a;
-  border-radius: 8px;
-  overflow: hidden;
-  position: relative;
-  box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+  display: none;
 }
 
 video {

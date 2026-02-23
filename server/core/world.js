@@ -1,6 +1,6 @@
 import { generateId, tileDistance, isTileWalkable } from '../shared/utils.js';
 import { NPC } from './npc.js';
-import { WORLD_MAP, GAME, RESPAWN_ZONES, ITEM_DEFS } from '../shared/constants.js';
+import { WORLD_MAP, GAME, RESPAWN_ZONES, ITEM_DEFS, WALKABLE_TILES } from '../shared/constants.js';
 import { SurvivalSystem } from './survival.js';
 
 // World items (dropped/spawned on the map)
@@ -148,8 +148,9 @@ export class World {
         // Update players
         const updatedPlayers = [];
         for (const player of this.players.values()) {
-            if (player.moving) {
-                player.update(delta);
+            const moved = player.update(delta);
+            const ticked = player.tick(delta);
+            if (moved || ticked) {
                 updatedPlayers.push(player.toPublic());
             }
         }

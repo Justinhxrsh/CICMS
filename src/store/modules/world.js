@@ -21,7 +21,7 @@ const mutations = {
         state.worldItems = items || [];
         if (survival) state.survival = survival;
     },
-    UPDATE_WORLD(state, { players, npcs, items }) {
+    UPDATE_WORLD(state, { players, npcs, items, survival }) {
         if (players) {
             players.forEach(updated => {
                 const idx = state.otherPlayers.findIndex(p => p.id === updated.id);

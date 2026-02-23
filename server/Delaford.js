@@ -124,11 +124,16 @@ export class Delaford {
             return;
         }
 
-        // Check name not already taken
-        for (const p of this.world.players.values()) {
+        // Fix: Kick old session if name is already taken (multi-tab or disconnection lag)
+        for (const [id, p] of this.world.players.entries()) {
             if (p.name.toLowerCase() === playerName.toLowerCase()) {
-                sendMessage(ws, { type: 'ERROR', message: 'Name already taken. Choose another.' });
-                return;
+                console.log(`[Delaford] Name conflict: Kicking old session for ${playerName}`);
+                // Safely close old session
+                if (p.ws && p.ws.readyState === WebSocket.OPEN) {
+                    sendMessage(p.ws, { type: 'ERROR', message: 'Signed in from another location.' });
+                    p.ws.close();
+                }
+                this.handleDisconnect(id);
             }
         }
 
@@ -236,6 +241,30 @@ export class Delaford {
                 if (result.success) this.sendInventoryUpdate(ws, player);
                 break;
             }
+            case 'mine':
+            case 'dig':
+            case 'place':
+            case 'house': {
+                // Determine target position for proximity check if applicable
+                let tx = player.col, ty = player.row;
+                if (data.args && data.args.length >= 2) {
+                    // For mine/dig/place, usually [col, row] or [item, col, row]
+                    const lastTwo = data.args.slice(-2);
+                    if (!isNaN(parseInt(lastTwo[0])) && !isNaN(parseInt(lastTwo[1]))) {
+                        tx = parseInt(lastTwo[0]);
+                        ty = parseInt(lastTwo[1]);
+                    }
+                }
+
+                // If it's a house, we don't need proximity check here (it's handled in survival.js)
+                if (action !== 'house' && !this.queueAction(player, tx, ty, 5, data)) return;
+
+                const cmdStr = `/${action} ${data.args ? data.args.join(' ') : ''}`.trim();
+                const result = this.survivalCommands.handleCommand(player, cmdStr);
+                this.sendActionResult(ws, true, result);
+                this.sendInventoryUpdate(ws, player);
+                break;
+            }
             case 'COMMAND': {
                 this.handleCommand(ws, data);
                 break;
@@ -289,15 +318,7 @@ export class Delaford {
             player.path = []; // stop moving
             this.sendActionResult(ws, true, `Teleported to ${col}, ${row}.`);
 
-            // Immediately broadcast our movement to everyone else
             this.broadcast({
-                type: 'WORLD_UPDATE',
-                players: [player.toPublic()],
-                npcs: [],
-                items: []
-            });
-            // And update explicitly our position to ourselves
-            sendMessage(ws, {
                 type: 'WORLD_UPDATE',
                 players: [player.toPublic()],
                 npcs: [],

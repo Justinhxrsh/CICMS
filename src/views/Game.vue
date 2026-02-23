@@ -36,13 +36,18 @@
           <CharacterWear v-if="activeTab === 'equipment'" />
           <Skills v-if="activeTab === 'skills'" />
         </div>
+
+        <!-- Video & Emotion tabs moved here (below inventory) -->
+        <div class="sidebar-video-area">
+          <EmotionDetector />
+          <VideoChat />
+        </div>
       </div>
 
       <!-- Main game canvas -->
       <div class="game-canvas-container">
         <GameCanvas ref="gameCanvas" />
-        <EmotionDetector />
-        <VideoChat />
+        <SurvivalControls />
         <ContextMenu ref="contextMenu" />
         <div v-if="levelUpMessage" class="level-up-toast">
           🎉 {{ levelUpMessage }}
@@ -97,6 +102,7 @@ import Skills from '../components/Skills.vue';
 import Minimap from '../components/Minimap.vue';
 import EmotionDetector from '../components/EmotionDetector.vue';
 import VideoChat from '../components/VideoChat.vue';
+import SurvivalControls from '../components/SurvivalControls.vue';
 
 export default {
   name: 'Game',
@@ -114,6 +120,7 @@ export default {
     Minimap,
     EmotionDetector,
     VideoChat,
+    SurvivalControls,
   },
   data() {
     return {
@@ -306,6 +313,19 @@ export default {
   position: relative;
   overflow: hidden;
   background: #000;
+}
+
+.video-overlay {
+  display: none; /* Removed from absolute overlay */
+}
+
+.sidebar-video-area {
+  padding: 10px;
+  border-top: 1px solid rgba(255,200,50,0.1);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  background: rgba(0,0,0,0.2);
 }
 
 .minimap-container {

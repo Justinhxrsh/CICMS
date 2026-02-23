@@ -195,27 +195,21 @@ export default {
 
 <style scoped>
 .video-chat-container {
-  position: absolute;
-  top: 20px;
-  right: 20px;
   display: flex;
   flex-direction: column;
-  gap: 16px;
-  z-index: 1000;
-  pointer-events: none;
+  gap: 12px;
 }
 
 .local-video-wrapper, .remote-video-wrapper {
   position: relative;
-  width: 220px;
-  height: 140px;
+  width: 210px;
+  height: 130px;
   background: rgba(10, 10, 20, 0.4);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   border-radius: 12px;
   overflow: hidden;
   border: 1px solid rgba(255, 255, 255, 0.1);
-  pointer-events: auto;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
   transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
