@@ -1,0 +1,49 @@
+{
+    "name": "delaford",
+    "version": "1.0.0",
+    "description": "A multiplayer 2D medieval RPG",
+    "private": true,
+    "scripts": {
+        "serve": "vue-cli-service serve",
+        "build": "vue-cli-service build && npm run build-server",
+        "lint": "vue-cli-service lint",
+        "lint:css": "stylelint \"src/**/*.{vue,css,scss}\"",
+        "format": "vue-cli-service lint --fix",
+        "test:unit": "vue-cli-service test:unit",
+        "build-server": "babel server --out-dir build --copy-files",
+        "dev:node": "node build/Delaford.js",
+        "start": "NODE_ENV=production node server.js",
+        "ndb": "ndb node build/Delaford.js"
+    },
+    "dependencies": {
+        "axios": "^0.21.2",
+        "compression": "^1.7.3",
+        "cors": "^2.8.5",
+        "express": "^4.16.3",
+        "lodash": "^4.17.21",
+        "node-emoji": "^1.8.1",
+        "pathfinding": "^0.4.18",
+        "pm2": "^3.2.4",
+        "uuid": "^8.3.2",
+        "vue": "^2.6.2",
+        "vue-router": "^3.0.1",
+        "vuex": "^3.0.1",
+        "vuex-persistedstate": "^2.5.4",
+        "ws": "^7.5.6"
+    },
+    "devDependencies": {
+        "@babel/cli": "^7.12.0",
+        "@babel/core": "^7.12.0",
+        "@babel/preset-env": "^7.12.0",
+        "@vue/cli-plugin-babel": "^3.12.1",
+        "@vue/cli-plugin-eslint": "^3.12.1",
+        "@vue/cli-plugin-unit-jest": "^3.12.1",
+        "@vue/cli-service": "^3.12.1",
+        "@vue/test-utils": "^1.0.0-beta.31",
+        "babel-eslint": "^10.0.1",
+        "babel-preset-vue": "^2.0.2",
+        "eslint": "^5.16.0",
+        "eslint-plugin-vue": "^5.0.0",
+        "vue-template-compiler": "^2.6.2"
+    }
+}
