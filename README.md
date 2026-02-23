@@ -1,5 +1,7 @@
 # ⚔️ Delaford | AI-Powered Medieval RPG
 
+**An AI-powered multiplayer medieval RPG where real-time facial expressions drive character emotions. Built with Vue.js, WebSockets, and WebRTC for a persistent survival experience featuring dynamic building, gathering, and video chat.**
+
 Delaford is a premium, multiplayer 2D medieval RPG built with a modern tech stack. It combines classic RPG elements (mining, gathering, combat) with cutting-edge AI features like **Real-time Emotion Sync** and **Integrated Video Chat**.
 
 ![Delaford Logo](https://raw.githubusercontent.com/Justinhxrsh/CICMS/main/src/assets/logo.png) <!-- Note: Replace with actual asset path if available -->
