@@ -3,6 +3,11 @@ const state = {
     npcs: [],
     worldItems: [],
     interactingWith: null,  // NPC being interacted with
+    survival: {
+        time: 1000,
+        brightness: 1.0,
+        dynamicTiles: {}
+    }
 };
 
 const getters = {
@@ -10,10 +15,11 @@ const getters = {
 };
 
 const mutations = {
-    SET_WORLD_STATE(state, { players, npcs, items }) {
+    SET_WORLD_STATE(state, { players, npcs, items, survival }) {
         state.otherPlayers = players || [];
         state.npcs = npcs || [];
         state.worldItems = items || [];
+        if (survival) state.survival = survival;
     },
     UPDATE_WORLD(state, { players, npcs, items }) {
         if (players) {
@@ -34,6 +40,9 @@ const mutations = {
         }
         if (items !== undefined) {
             state.worldItems = items;
+        }
+        if (survival) {
+            state.survival = survival;
         }
     },
     ADD_PLAYER(state, player) {

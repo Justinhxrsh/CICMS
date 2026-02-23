@@ -89,6 +89,7 @@ class WebSocketService {
                     players: otherPlayers,
                     npcs: data.npcs,
                     items: data.items,
+                    survival: data.survival
                 });
 
                 // Update our own position if included

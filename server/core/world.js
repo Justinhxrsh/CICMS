@@ -1,6 +1,7 @@
 import { generateId, tileDistance, isTileWalkable } from '../shared/utils.js';
 import { NPC } from './npc.js';
 import { WORLD_MAP, GAME, RESPAWN_ZONES, ITEM_DEFS } from '../shared/constants.js';
+import { SurvivalSystem } from './survival.js';
 
 // World items (dropped/spawned on the map)
 class WorldItem {
@@ -96,6 +97,7 @@ export class World {
         this.respawnTrackers = new Map(); // zoneKey -> RespawnTracker
         this.chatHistory = [];
         this.lastTick = Date.now();
+        this.survival = new SurvivalSystem(this);
 
         this.initNPCs();
         this.initRespawns();
@@ -133,6 +135,8 @@ export class World {
         const now = Date.now();
         const delta = now - this.lastTick;
         this.lastTick = now;
+
+        this.survival.tick(delta);
 
         // Update NPCs
         const updatedNPCs = [];
@@ -205,6 +209,11 @@ export class World {
             npcs: Array.from(this.npcs.values()).map(n => n.toPublic()),
             items: Array.from(this.worldItems.values()).map(i => i.toPublic()),
             chatHistory: this.chatHistory.slice(-20),
+            survival: {
+                time: this.survival.time,
+                brightness: this.survival.brightness,
+                dynamicTiles: Object.fromEntries(this.survival.dynamicTiles)
+            }
         };
     }
 }

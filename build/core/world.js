@@ -7,6 +7,7 @@ exports.World = void 0;
 var _utils = require("../shared/utils.js");
 var _npc = require("./npc.js");
 var _constants = require("../shared/constants.js");
+var _survival = require("./survival.js");
 // World items (dropped/spawned on the map)
 class WorldItem {
   constructor(defKey, col, row) {
@@ -100,6 +101,7 @@ class World {
     this.respawnTrackers = new Map(); // zoneKey -> RespawnTracker
     this.chatHistory = [];
     this.lastTick = Date.now();
+    this.survival = new _survival.SurvivalSystem(this);
     this.initNPCs();
     this.initRespawns();
   }
@@ -150,6 +152,7 @@ class World {
     const now = Date.now();
     const delta = now - this.lastTick;
     this.lastTick = now;
+    this.survival.tick(delta);
 
     // Update NPCs
     const updatedNPCs = [];
@@ -237,7 +240,12 @@ class World {
       players: Array.from(this.players.values()).map(p => p.toPublic()),
       npcs: Array.from(this.npcs.values()).map(n => n.toPublic()),
       items: Array.from(this.worldItems.values()).map(i => i.toPublic()),
-      chatHistory: this.chatHistory.slice(-20)
+      chatHistory: this.chatHistory.slice(-20),
+      survival: {
+        time: this.survival.time,
+        brightness: this.survival.brightness,
+        dynamicTiles: Object.fromEntries(this.survival.dynamicTiles)
+      }
     };
   }
 }

@@ -58,6 +58,9 @@ export default {
     worldItems() {
       return this.$store.state.world.worldItems;
     },
+    survival() {
+      return this.$store.state.world.survival;
+    },
   },
   mounted() {
     this.canvas = this.$refs.canvas;
@@ -156,6 +159,8 @@ export default {
       this.renderHoverHighlight(ctx);
 
       ctx.restore();
+      
+      this.renderNightOverlay(ctx, w, h);
     },
 
     renderMap(ctx) {
@@ -168,7 +173,14 @@ export default {
 
       for (let row = startRow; row < endRow; row++) {
         for (let col = startCol; col < endCol; col++) {
-          const tile = this.worldMap[row][col];
+          let tile = this.worldMap[row][col];
+          
+          // Check dynamic tiles
+          if (this.survival && this.survival.dynamicTiles) {
+            const dynamicTile = this.survival.dynamicTiles[`${col},${row}`];
+            if (dynamicTile !== undefined) tile = dynamicTile;
+          }
+
           const px = col * TILE_SIZE;
           const py = row * TILE_SIZE;
 
@@ -501,6 +513,15 @@ export default {
       ctx.strokeRect(px + 1, py + 1, TILE_SIZE - 2, TILE_SIZE - 2);
     },
 
+    renderNightOverlay(ctx, w, h) {
+      if (!this.survival) return;
+      const b = this.survival.brightness;
+      if (b >= 1) return;
+
+      ctx.fillStyle = `rgba(0, 0, 20, ${1 - b})`;
+      ctx.fillRect(0, 0, w, h);
+    },
+
     // Convert screen coords to world tile
     screenToTile(screenX, screenY) {
       const worldX = screenX + this.cameraX;
@@ -564,6 +585,22 @@ export default {
 
       // Walk here
       options.push({ label: `🚶 Walk here`, action: () => wsService.moveRequest(col, row) });
+
+      // Survival Options
+      if (this.survival && this.survival.dynamicTiles) {
+        const isDynamic = this.survival.dynamicTiles[`${col},${row}`] !== undefined;
+        if (isDynamic) {
+          options.push({ label: `⛏️ Mine this block`, action: () => wsService.action('mine', { args: [col, row] }) });
+        } else {
+          options.push({ label: '🕳️ Dig here', action: () => wsService.action('dig', { args: [col, row] }) });
+          
+          const hasWood = this.$store.state.inventory.items.some(i => i.defKey === 'WOOD');
+          if (hasWood) {
+            options.push({ label: '🧱 Place Wood', action: () => wsService.action('place', { args: ['wood', col, row] }) });
+          }
+          options.push({ label: '🏠 Build Shelter', action: () => wsService.action('house', { args: [] }) });
+        }
+      }
 
       // Show context menu
       if (options.length > 0) {
