@@ -13,6 +13,7 @@
         "build-server": "babel server --out-dir build --copy-files",
         "dev:node": "node build/Delaford.js",
         "start": "NODE_ENV=production node server.js",
+        "prestart": "fuser -k 6500/tcp || true",
         "ndb": "ndb node build/Delaford.js"
     },
     "dependencies": {
