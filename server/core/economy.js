@@ -142,6 +142,44 @@ export class GameEconomy {
         return { success: true, message: `🏦 Savings account opened! 5% annual interest rate.` };
     }
 
+    applyInterest() {
+        const now = Date.now();
+        const oneHour = 3600000; // 1 hour in milliseconds
+
+        for (let id in this.bank.accounts) {
+            const account = this.bank.accounts[id];
+
+            if (account.savingsOpened && account.savingsBalance > 0) {
+                const hoursPassed = Math.floor((now - account.lastInterestTime) / oneHour);
+
+                if (hoursPassed >= 1) {
+                    const interestRate = 0.000057;
+                    const interest = Math.floor(account.savingsBalance * interestRate * hoursPassed);
+
+                    if (interest > 0) {
+                        account.savingsBalance += interest;
+                        account.lastInterestTime = now;
+                        this.recordTransaction(id, "interest", interest, null, "Savings interest");
+                    }
+                }
+            }
+        }
+    }
+
+    checkExpiredListings() {
+        const now = Date.now();
+        for (let id in this.shops.listings) {
+            const listing = this.shops.listings[id];
+            if (listing.status === "active" && listing.expiresAt < now) {
+                listing.status = "expired";
+                const seller = this.world.players.get(listing.sellerId);
+                if (seller) {
+                    seller.addItem(listing.itemId, listing.quantity);
+                }
+            }
+        }
+    }
+
     requestLoan(player, amount, installments) {
         const account = this.bank.accounts[player.id];
 

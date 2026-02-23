@@ -506,6 +506,7 @@ export class Delaford {
             // Economy update (interest)
             if (now % 60000 < GAME.TICK_RATE) { // Roughly every minute for interest check/listings
                 this.economy.applyInterest();
+                this.economy.checkExpiredListings();
             }
 
             // Check for arrived queued actions
