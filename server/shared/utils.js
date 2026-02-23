@@ -91,7 +91,7 @@ export function findPath(startCol, startRow, endCol, endRow) {
     ];
 
     let iterations = 0;
-    const MAX_ITER = 500;
+    const MAX_ITER = 2000;
 
     while (openSet.size > 0 && iterations < MAX_ITER) {
         iterations++;

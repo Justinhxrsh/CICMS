@@ -11,15 +11,32 @@
         <button class="close-btn" @click="close">×</button>
       </div>
 
+      <div class="shop-tabs">
+        <button :class="{ active: activeTab === 'buy' }" @click="activeTab = 'buy'">Buy</button>
+        <button :class="{ active: activeTab === 'sell' }" @click="activeTab = 'sell'">Sell</button>
+      </div>
+
       <div class="shop-content">
-        <div class="shop-grid">
+        <div class="shop-grid" v-if="activeTab === 'buy'">
           <div v-for="item in interactingWith.shopItems" :key="item.id" class="shop-item">
             <div class="item-icon">{{ getEmoji(item.defKey) }}</div>
             <div class="item-details">
               <div class="item-name">{{ item.name }}</div>
-              <div class="item-price">{{ item.price }}g</div>
+              <div class="item-price">{{ item.buyPrice || item.price }}g</div>
             </div>
             <button class="buy-btn" @click="buyItem(item)">Buy</button>
+          </div>
+        </div>
+
+        <div class="shop-grid" v-if="activeTab === 'sell'">
+          <div v-if="inventory.length === 0" class="empty-state">No items to sell.</div>
+          <div v-for="item in inventory" :key="item.id" class="shop-item">
+            <div class="item-icon">{{ item.emoji }}</div>
+            <div class="item-details">
+              <div class="item-name">{{ item.name }} <span v-if="item.quantity > 1">x{{ item.quantity }}</span></div>
+              <div class="item-price">{{ Math.floor(item.value * 0.5) }}g (Sell)</div>
+            </div>
+            <button class="buy-btn sell-btn" @click="sellItem(item)">Sell 1</button>
           </div>
         </div>
       </div>
@@ -33,9 +50,14 @@ import wsService from '../services/websocket';
 
 export default {
   name: 'ShopModal',
+  data() {
+    return {
+      activeTab: 'buy',
+    };
+  },
   computed: {
     ...mapState('world', ['interactingWith']),
-    ...mapState('player', ['gold']),
+    ...mapState('player', ['gold', 'inventory']),
   },
   methods: {
     close() {
@@ -58,6 +80,13 @@ export default {
       wsService.action('BUY_ITEM', {
         targetId: this.interactingWith.id,
         itemId: item.defKey,
+        quantity: 1
+      });
+    },
+    sellItem(item) {
+      wsService.action('SELL_ITEM', {
+        targetId: this.interactingWith.id,
+        itemId: item.id,
         quantity: 1
       });
     }
@@ -182,5 +211,51 @@ export default {
 .buy-btn:hover {
   background: #f5d44a;
   color: #1a0a00;
+}
+
+.sell-btn {
+  background: rgba(245, 112, 74, 0.1);
+  border-color: #f55a4a;
+  color: #f55a4a;
+}
+
+.sell-btn:hover {
+  background: #f55a4a;
+  color: #1a0000;
+}
+
+.shop-tabs {
+  display: flex;
+  background: rgba(0, 0, 0, 0.4);
+  border-bottom: 1px solid rgba(255, 200, 50, 0.1);
+}
+
+.shop-tabs button {
+  flex: 1;
+  padding: 12px;
+  background: transparent;
+  border: none;
+  color: rgba(255, 255, 255, 0.5);
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.shop-tabs button:hover {
+  background: rgba(255, 200, 50, 0.05);
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.shop-tabs button.active {
+  color: #f5d44a;
+  border-bottom: 2px solid #f5d44a;
+  background: rgba(255, 200, 50, 0.1);
+}
+
+.empty-state {
+  text-align: center;
+  padding: 30px;
+  color: rgba(255, 255, 255, 0.5);
+  font-style: italic;
 }
 </style>
