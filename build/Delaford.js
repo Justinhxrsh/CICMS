@@ -10,11 +10,14 @@ var _player = require("./core/player.js");
 var _combat = require("./core/combat.js");
 var _utils = require("./shared/utils.js");
 var _constants = require("./shared/constants.js");
+var _economy = require("./core/economy.js");
 function _interopRequireWildcard(e, t) { if ("function" == typeof WeakMap) var r = new WeakMap(), n = new WeakMap(); return (_interopRequireWildcard = function (e, t) { if (!t && e && e.__esModule) return e; var o, i, f = { __proto__: null, default: e }; if (null === e || "object" != typeof e && "function" != typeof e) return f; if (o = t ? n : r) { if (o.has(e)) return o.get(e); o.set(e, f); } for (const t in e) "default" !== t && {}.hasOwnProperty.call(e, t) && ((i = (o = Object.defineProperty) && Object.getOwnPropertyDescriptor(e, t)) && (i.get || i.set) ? o(f, t, i) : f[t] = e[t]); return f; })(e, t); }
 class Delaford {
   constructor(httpServer) {
     this.world = new _world.World();
     this.combat = new _combat.Combat(this.world);
+    this.economy = new _economy.GameEconomy(this.world);
+    this.bankCommands = new _economy.BankCommands(this.economy);
     this.wss = new _ws.Server({
       server: httpServer
     });
@@ -329,7 +332,12 @@ class Delaford {
         items: []
       });
     } else if (command === 'help') {
-      this.sendActionResult(ws, true, 'Commands: /give <item_id> [amount], /tp <x> <y>');
+      this.sendActionResult(ws, true, 'Commands: /give <item_id> [amount], /tp <x> <y>, /bank, /shop');
+    } else if (command === 'bank' || command === 'shop') {
+      const commandStr = `${command} ${args.join(' ')}`;
+      const result = this.bankCommands.handleCommand(player, commandStr);
+      this.sendActionResult(ws, true, result);
+      this.sendInventoryUpdate(ws, player);
     } else {
       this.sendActionResult(ws, false, `Unknown command: ${command}`);
     }
@@ -526,6 +534,13 @@ class Delaford {
         updatedNPCs,
         updatedPlayers
       } = this.world.tick();
+      const now = Date.now();
+
+      // Economy update (interest)
+      if (now % 60000 < _constants.GAME.TICK_RATE) {
+        // Roughly every minute for interest check/listings
+        this.economy.applyInterest();
+      }
 
       // Check for arrived queued actions
       for (const player of this.world.players.values()) {
@@ -537,7 +552,6 @@ class Delaford {
           }
         }
       }
-      const now = Date.now();
       if (now - lastSync >= SYNC_INTERVAL) {
         lastSync = now;
 

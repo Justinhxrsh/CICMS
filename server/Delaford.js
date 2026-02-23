@@ -4,11 +4,14 @@ import { Player } from './core/player.js';
 import { Combat } from './core/combat.js';
 import { generateId, sendMessage, findPath, tileDistance } from './shared/utils.js';
 import { GAME, RESPAWN_ZONES, ITEM_DEFS } from './shared/constants.js';
+import { GameEconomy, BankCommands } from './core/economy.js';
 
 export class Delaford {
     constructor(httpServer) {
         this.world = new World();
         this.combat = new Combat(this.world);
+        this.economy = new GameEconomy(this.world);
+        this.bankCommands = new BankCommands(this.economy);
         this.wss = new WebSocketServer({ server: httpServer });
         this.setupWebSocket();
         this.startGameLoop();
@@ -299,7 +302,12 @@ export class Delaford {
                 items: []
             });
         } else if (command === 'help') {
-            this.sendActionResult(ws, true, 'Commands: /give <item_id> [amount], /tp <x> <y>');
+            this.sendActionResult(ws, true, 'Commands: /give <item_id> [amount], /tp <x> <y>, /bank, /shop');
+        } else if (command === 'bank' || command === 'shop') {
+            const commandStr = `${command} ${args.join(' ')}`;
+            const result = this.bankCommands.handleCommand(player, commandStr);
+            this.sendActionResult(ws, true, result);
+            this.sendInventoryUpdate(ws, player);
         } else {
             this.sendActionResult(ws, false, `Unknown command: ${command}`);
         }
@@ -493,6 +501,12 @@ export class Delaford {
 
         this.gameLoopInterval = setInterval(() => {
             const { updatedNPCs, updatedPlayers } = this.world.tick();
+            const now = Date.now();
+
+            // Economy update (interest)
+            if (now % 60000 < GAME.TICK_RATE) { // Roughly every minute for interest check/listings
+                this.economy.applyInterest();
+            }
 
             // Check for arrived queued actions
             for (const player of this.world.players.values()) {
@@ -504,8 +518,6 @@ export class Delaford {
                     }
                 }
             }
-
-            const now = Date.now();
 
             if (now - lastSync >= SYNC_INTERVAL) {
                 lastSync = now;
