@@ -36,18 +36,49 @@ export function isTileWalkable(col, row) {
 
 // Simple A* pathfinding
 export function findPath(startCol, startRow, endCol, endRow) {
-    if (!isTileWalkable(endCol, endRow)) return [];
+    let targetCol = endCol;
+    let targetRow = endRow;
+
+    if (!isTileWalkable(targetCol, targetRow)) {
+        // Find nearest walkable adjacent tile to target, favoring the one closest to player
+        const adjacent = [
+            { dc: 0, dr: -1 }, { dc: 1, dr: 0 }, { dc: 0, dr: 1 }, { dc: -1, dr: 0 },
+            { dc: 1, dr: -1 }, { dc: 1, dr: 1 }, { dc: -1, dr: 1 }, { dc: -1, dr: -1 }
+        ];
+        let found = false;
+        let bestDist = Infinity;
+        let bestCol = startCol, bestRow = startRow;
+
+        for (const dir of adjacent) {
+            const nc = targetCol + dir.dc;
+            const nr = targetRow + dir.dr;
+            if (isTileWalkable(nc, nr)) {
+                const distDist = Math.abs(startCol - nc) + Math.abs(startRow - nr);
+                if (distDist < bestDist) {
+                    bestDist = distDist;
+                    bestCol = nc;
+                    bestRow = nr;
+                    found = true;
+                }
+            }
+        }
+        if (!found) return [];
+        targetCol = bestCol;
+        targetRow = bestRow;
+    }
+
+    if (startCol === targetCol && startRow === targetRow) return [];
 
     const openSet = new Map();
     const closedSet = new Set();
     const startKey = `${startCol},${startRow}`;
-    const endKey = `${endCol},${endRow}`;
+    const endKey = `${targetCol},${targetRow}`;
 
     const startNode = {
         col: startCol,
         row: startRow,
         g: 0,
-        h: Math.abs(endCol - startCol) + Math.abs(endRow - startRow),
+        h: Math.abs(targetCol - startCol) + Math.abs(targetRow - startRow),
         parent: null,
     };
     startNode.f = startNode.g + startNode.h;
@@ -99,7 +130,7 @@ export function findPath(startCol, startRow, endCol, endRow) {
             if (closedSet.has(nKey) || !isTileWalkable(nc, nr)) continue;
 
             const g = current.g + 1;
-            const h = Math.abs(endCol - nc) + Math.abs(endRow - nr);
+            const h = Math.abs(targetCol - nc) + Math.abs(targetRow - nr);
             const f = g + h;
 
             if (openSet.has(nKey)) {

@@ -183,8 +183,6 @@ class Delaford {
       targetCol,
       targetRow
     } = data;
-
-    // Server-side pathfinding
     const path = (0, _utils.findPath)(player.col, player.row, targetCol, targetRow);
     if (path.length === 0) {
       (0, _utils.sendMessage)(ws, {
@@ -194,12 +192,42 @@ class Delaford {
       });
       return;
     }
-    player.setPath(path);
+    player.path = path;
+    player.pathIndex = 0;
     player.moving = true;
+    player.pendingAction = null; // Clear queued action if player moves manually
+
     (0, _utils.sendMessage)(ws, {
       type: 'MOVE_ACK',
       path
     });
+  }
+  queueAction(player, targetCol, targetRow, maxDist, actionData) {
+    const dist = (0, _utils.tileDistance)({
+      col: player.col,
+      row: player.row
+    }, {
+      col: targetCol,
+      row: targetRow
+    });
+    if (dist <= maxDist) {
+      return true;
+    } else {
+      const path = (0, _utils.findPath)(player.col, player.row, targetCol, targetRow);
+      if (path.length > 0) {
+        player.path = path;
+        player.pathIndex = 0;
+        player.moving = true;
+        player.pendingAction = actionData;
+        (0, _utils.sendMessage)(player.ws, {
+          type: 'MOVE_ACK',
+          path
+        });
+      } else {
+        this.sendActionResult(player.ws, false, 'Cannot reach that location.');
+      }
+      return false;
+    }
   }
   handleAction(ws, data) {
     const player = this.world.players.get(ws.playerId);
@@ -213,8 +241,9 @@ class Delaford {
     switch (action) {
       case 'BUY_ITEM':
         {
-          const npc = this.world.getNearbyNPC(player, targetId);
-          if (!npc) return this.sendActionResult(ws, false, 'Move closer to the NPC.');
+          const npc = this.world.npcs.get(targetId);
+          if (!npc) return this.sendActionResult(ws, false, 'NPC not found.');
+          if (!this.queueAction(player, npc.col, npc.row, 3, data)) return;
           const result = npc.processBuy(player, itemId, quantity || 1);
           this.sendActionResult(ws, result.success, result.message);
           if (result.success) this.sendInventoryUpdate(ws, player);
@@ -222,8 +251,9 @@ class Delaford {
         }
       case 'SELL_ITEM':
         {
-          const npc = this.world.getNearbyNPC(player, targetId);
-          if (!npc) return this.sendActionResult(ws, false, 'Move closer to the NPC.');
+          const npc = this.world.npcs.get(targetId);
+          if (!npc) return this.sendActionResult(ws, false, 'NPC not found.');
+          if (!this.queueAction(player, npc.col, npc.row, 3, data)) return;
           const result = npc.processSell(player, itemId, quantity || 1);
           this.sendActionResult(ws, result.success, result.message);
           if (result.success) this.sendInventoryUpdate(ws, player);
@@ -312,10 +342,9 @@ class Delaford {
       targetType
     } = data;
     if (targetType === 'npc') {
-      const npc = this.world.getNearbyNPC(player, targetId);
-      if (!npc) {
-        return this.sendActionResult(ws, false, 'Move closer.');
-      }
+      const npc = this.world.npcs.get(targetId);
+      if (!npc) return this.sendActionResult(ws, false, 'NPC not found.');
+      if (!this.queueAction(player, npc.col, npc.row, 3, data)) return;
       (0, _utils.sendMessage)(ws, {
         type: 'INTERACT_RESULT',
         targetType: 'npc',
@@ -323,10 +352,9 @@ class Delaford {
       });
     } else if (targetType === 'item') {
       // Pick up world item
-      const item = this.world.getNearbyItem(player, targetId);
-      if (!item) {
-        return this.sendActionResult(ws, false, 'Too far away.');
-      }
+      const item = this.world.worldItems.get(targetId);
+      if (!item) return this.sendActionResult(ws, false, 'Item not found.');
+      if (!this.queueAction(player, item.col, item.row, 2, data)) return;
       if (player.addItem(item.defKey)) {
         this.world.worldItems.delete(item.id);
 
@@ -353,18 +381,7 @@ class Delaford {
     } = data;
     const zoneDef = _constants.RESPAWN_ZONES[zoneKey];
     if (!zoneDef) return this.sendActionResult(ws, false, 'Invalid resource zone.');
-
-    // Check distance to zone center
-    const dist = (0, _utils.tileDistance)({
-      col: player.col,
-      row: player.row
-    }, {
-      col: zoneDef.col,
-      row: zoneDef.row
-    });
-    if (dist > zoneDef.radius + 3) {
-      return this.sendActionResult(ws, false, 'Move closer to gather here.');
-    }
+    if (!this.queueAction(player, zoneDef.col, zoneDef.row, zoneDef.radius + 3, data)) return;
 
     // Check required tool
     if (zoneDef.requiredTool) {
@@ -452,8 +469,9 @@ class Delaford {
       itemId,
       quantity
     } = data;
-    const npc = this.world.getNearbyNPC(player, npcId);
-    if (!npc) return this.sendActionResult(ws, false, 'Move closer to the bank.');
+    const npc = this.world.npcs.get(npcId);
+    if (!npc) return this.sendActionResult(ws, false, 'NPC not found.');
+    if (!this.queueAction(player, npc.col, npc.row, 3, data)) return;
     const result = npc.processBank(player, action, itemId, quantity);
     this.sendActionResult(ws, result.success, result.message);
     if (result.success) this.sendInventoryUpdate(ws, player);
@@ -508,6 +526,17 @@ class Delaford {
         updatedNPCs,
         updatedPlayers
       } = this.world.tick();
+
+      // Check for arrived queued actions
+      for (const player of this.world.players.values()) {
+        if (!player.moving && player.pendingAction) {
+          const action = player.pendingAction;
+          player.pendingAction = null;
+          if (player.ws && player.ws.readyState === _ws.default.OPEN) {
+            this.handleMessage(player.ws, action);
+          }
+        }
+      }
       const now = Date.now();
       if (now - lastSync >= SYNC_INTERVAL) {
         lastSync = now;

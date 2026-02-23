@@ -26,6 +26,7 @@ class Player {
     this.pathIndex = 0;
     this.moving = false;
     this.direction = 'south';
+    this.pendingAction = null;
 
     // Stats
     this.health = 100;
