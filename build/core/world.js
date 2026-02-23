@@ -176,7 +176,15 @@ class World {
     }
     return {
       updatedNPCs,
-      updatedPlayers
+      updatedPlayers,
+      survival: {
+        time: this.survival.time,
+        brightness: this.survival.brightness,
+        dynamicTiles: Array.from(this.survival.dynamicTiles.entries()).reduce((obj, [key, value]) => {
+          obj[key] = value;
+          return obj;
+        }, {})
+      }
     };
   }
 
@@ -244,7 +252,10 @@ class World {
       survival: {
         time: this.survival.time,
         brightness: this.survival.brightness,
-        dynamicTiles: Object.fromEntries(this.survival.dynamicTiles)
+        dynamicTiles: Array.from(this.survival.dynamicTiles.entries()).reduce((obj, [key, value]) => {
+          obj[key] = value;
+          return obj;
+        }, {})
       }
     };
   }

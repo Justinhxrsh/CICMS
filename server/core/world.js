@@ -159,7 +159,18 @@ export class World {
             tracker.tick(this, now);
         }
 
-        return { updatedNPCs, updatedPlayers };
+        return {
+            updatedNPCs,
+            updatedPlayers,
+            survival: {
+                time: this.survival.time,
+                brightness: this.survival.brightness,
+                dynamicTiles: Array.from(this.survival.dynamicTiles.entries()).reduce((obj, [key, value]) => {
+                    obj[key] = value;
+                    return obj;
+                }, {})
+            }
+        };
     }
 
     // Find which respawn zone a world item belongs to
@@ -212,7 +223,10 @@ export class World {
             survival: {
                 time: this.survival.time,
                 brightness: this.survival.brightness,
-                dynamicTiles: Object.fromEntries(this.survival.dynamicTiles)
+                dynamicTiles: Array.from(this.survival.dynamicTiles.entries()).reduce((obj, [key, value]) => {
+                    obj[key] = value;
+                    return obj;
+                }, {})
             }
         };
     }

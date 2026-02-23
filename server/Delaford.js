@@ -507,7 +507,8 @@ export class Delaford {
         const SYNC_INTERVAL = GAME.SYNC_INTERVAL;
 
         this.gameLoopInterval = setInterval(() => {
-            const { updatedNPCs, updatedPlayers } = this.world.tick();
+            const tickResult = this.world.tick();
+            const { updatedNPCs, updatedPlayers, survival } = tickResult;
             const now = Date.now();
 
             // Economy update (interest)
@@ -533,14 +534,13 @@ export class Delaford {
                 // Broadcast new world item spawns
                 const currentItems = Array.from(this.world.worldItems.values()).map(i => i.toPublic());
 
-                if (updatedPlayers.length > 0 || updatedNPCs.length > 0) {
-                    this.broadcast({
-                        type: 'WORLD_UPDATE',
-                        players: updatedPlayers,
-                        npcs: updatedNPCs,
-                        items: currentItems,
-                    });
-                }
+                this.broadcast({
+                    type: 'WORLD_UPDATE',
+                    players: updatedPlayers,
+                    npcs: updatedNPCs,
+                    items: currentItems,
+                    survival: survival
+                });
             }
         }, GAME.TICK_RATE);
 
