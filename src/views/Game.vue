@@ -42,6 +42,7 @@
       <div class="game-canvas-container">
         <GameCanvas ref="gameCanvas" />
         <EmotionDetector />
+        <VideoChat />
         <ContextMenu ref="contextMenu" />
         <div v-if="levelUpMessage" class="level-up-toast">
           🎉 {{ levelUpMessage }}
@@ -95,6 +96,7 @@ import DialogModal from '../components/DialogModal.vue';
 import Skills from '../components/Skills.vue';
 import Minimap from '../components/Minimap.vue';
 import EmotionDetector from '../components/EmotionDetector.vue';
+import VideoChat from '../components/VideoChat.vue';
 
 export default {
   name: 'Game',
@@ -111,6 +113,7 @@ export default {
     Skills,
     Minimap,
     EmotionDetector,
+    VideoChat,
   },
   data() {
     return {

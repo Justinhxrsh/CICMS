@@ -196,6 +196,11 @@ class WebSocketService {
                 break;
             }
 
+            case 'WEBRTC_SIGNAL': {
+                this.emit('WEBRTC_SIGNAL', data);
+                break;
+            }
+
             default:
                 // console.log('[WS] Unhandled message type:', type);
                 break;

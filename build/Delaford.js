@@ -95,11 +95,29 @@ class Delaford {
       case 'GATHER':
         this.handleGather(ws, data);
         break;
+      case 'WEBRTC_SIGNAL':
+        this.handleWebRTCSignal(ws, data);
+        break;
       default:
         (0, _utils.sendMessage)(ws, {
           type: 'ERROR',
           message: `Unknown message type: ${type}`
         });
+    }
+  }
+  handleWebRTCSignal(ws, data) {
+    if (!ws.playerId) return;
+    const {
+      targetId,
+      signal
+    } = data;
+    const targetPlayer = this.world.players.get(targetId);
+    if (targetPlayer && targetPlayer.ws.readyState === _ws.default.OPEN) {
+      (0, _utils.sendMessage)(targetPlayer.ws, {
+        type: 'WEBRTC_SIGNAL',
+        sourceId: ws.playerId,
+        signal
+      });
     }
   }
   handleJoin(ws, data) {
