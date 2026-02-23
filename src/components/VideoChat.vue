@@ -196,77 +196,102 @@ export default {
 <style scoped>
 .video-chat-container {
   position: absolute;
-  top: 10px;
-  right: 10px;
+  top: 20px;
+  right: 20px;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 16px;
   z-index: 1000;
   pointer-events: none;
 }
 
 .local-video-wrapper, .remote-video-wrapper {
   position: relative;
-  width: 140px;
-  height: 105px;
-  background: #222;
-  border-radius: 8px;
+  width: 220px;
+  height: 140px;
+  background: rgba(10, 10, 20, 0.4);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-radius: 12px;
   overflow: hidden;
-  border: 2px solid rgba(255, 200, 50, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.1);
   pointer-events: auto;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.5);
-  transition: transform 0.2s;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+  transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
 .local-video-wrapper:hover, .remote-video-wrapper:hover {
-  transform: scale(1.05);
+  transform: scale(1.03) translateY(-2px);
+  border-color: rgba(255, 200, 50, 0.4);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.6), 0 0 20px rgba(255, 200, 50, 0.1);
 }
 
 video {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  border-radius: 12px;
 }
 
 .video-controls {
   position: absolute;
-  bottom: 4px;
+  bottom: 8px;
   left: 50%;
   transform: translateX(-50%);
   display: flex;
-  gap: 6px;
+  gap: 8px;
+  background: rgba(0, 0, 0, 0.5);
+  padding: 6px 12px;
+  border-radius: 20px;
+  backdrop-filter: blur(8px);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.local-video-wrapper:hover .video-controls {
+  opacity: 1;
 }
 
 .video-controls button {
-  background: rgba(0,0,0,0.6);
-  border: 1px solid rgba(255,255,255,0.2);
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.15);
   color: white;
   border-radius: 50%;
-  width: 28px;
-  height: 28px;
+  width: 32px;
+  height: 32px;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  font-size: 14px;
+  font-size: 16px;
+  transition: all 0.2s;
+}
+
+.video-controls button:hover {
+  background: rgba(255, 255, 255, 0.2);
+  transform: scale(1.1);
 }
 
 .video-controls button.off {
-  background: rgba(200, 50, 50, 0.8);
+  background: rgba(235, 87, 87, 0.8);
+  border-color: rgba(235, 87, 87, 1);
 }
 
 .peer-name {
   position: absolute;
-  bottom: 2px;
-  left: 4px;
-  background: rgba(0,0,0,0.6);
-  padding: 2px 6px;
-  border-radius: 4px;
-  font-size: 10px;
+  bottom: 8px;
+  left: 8px;
+  background: rgba(0, 0, 0, 0.6);
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 500;
   color: #fff;
   white-space: nowrap;
   max-width: 90%;
   overflow: hidden;
   text-overflow: ellipsis;
+  backdrop-filter: blur(4px);
+  border: 1px solid rgba(255, 255, 255, 0.05);
 }
 </style>
