@@ -82,4 +82,4 @@ Contributions are welcome! If you'd like to improve Delaford, please fork the re
 This project is licensed under the MIT License.
 
 ---
-*Created with ❤️ by Justin*
+*Created with by Justin*
