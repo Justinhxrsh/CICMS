@@ -201,23 +201,20 @@ class NPC {
         success: false,
         message: 'Item not found.'
       };
-      const removed = player.removeItem(itemId, quantity || item.quantity);
+      const qty = quantity || item.quantity;
+      const itemDef = _constants.ITEM_DEFS[item.defKey];
+      const sellValue = (itemDef ? itemDef.value : item.value) * qty;
+      const removed = player.removeItem(itemId, qty);
       if (!removed) return {
         success: false,
-        message: 'Failed to deposit.'
+        message: 'Failed to deposit/sell.'
       };
-      const existing = player.bank.find(i => i.defKey === item.defKey && item.stackable);
-      if (existing) {
-        existing.quantity += quantity || item.quantity;
-      } else {
-        player.bank.push({
-          ...item,
-          quantity: quantity || item.quantity
-        });
-      }
+      player.gold = Math.min(player.gold + sellValue, _constants.GAME.MAX_GOLD);
+      // We no longer put it into player.bank, effectively acting as an instant direct 'Sell for Gold' action
+
       return {
         success: true,
-        message: `Deposited ${item.name}.`
+        message: `Deposited ${item.name} into Bank for ${sellValue} gold!`
       };
     }
     if (action === 'WITHDRAW') {

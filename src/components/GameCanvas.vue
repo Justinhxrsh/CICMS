@@ -607,6 +607,8 @@ export default {
         GOLD_MINE: { col: 8, row: 3, radius: 2, label: '⛏️ Mine Gold Ore' },
         FISHING_SPOT: { col: 2, row: 18, radius: 2, label: '🎣 Fish here' },
         GRAVEYARD: { col: 34, row: 26, radius: 3, label: '🦴 Gather bones' },
+        SHEEP_FLOCK: { col: 22, row: 8, radius: 3, label: '⚔️ Attack Sheep' },
+        CREEPER_NEST: { col: 10, row: 20, radius: 2, label: '💥 Kill Creeper' },
       };
 
       for (const [key, zone] of Object.entries(zones)) {

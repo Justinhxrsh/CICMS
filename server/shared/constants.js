@@ -217,6 +217,25 @@ export const ITEM_DEFS = {
         color: '#66aacc',
         emoji: '🐟',
     },
+    RAW_MEAT: {
+        id: 'raw_meat',
+        name: 'Raw Meat',
+        type: 'consumable',
+        value: 40,
+        stackable: true,
+        heals: 25,
+        color: '#ff6666',
+        emoji: '🥩',
+    },
+    GUNPOWDER: {
+        id: 'gunpowder',
+        name: 'Gunpowder',
+        type: 'resource',
+        value: 100,
+        stackable: true,
+        color: '#444444',
+        emoji: '💥',
+    },
     // Consumables
     BREAD: {
         id: 'bread',
@@ -371,6 +390,26 @@ export const RESPAWN_ZONES = {
         cooldown: 10000,
         xpPerGather: 5,
         skillType: null,
+    },
+    SHEEP_FLOCK: {
+        id: 'sheep_flock',
+        col: 22, row: 8,
+        radius: 3,
+        items: ['RAW_MEAT'],
+        cooldown: 5000,
+        requiredTool: 'iron_sword',
+        xpPerGather: 20,
+        skillType: 'combat',
+    },
+    CREEPER_NEST: {
+        id: 'creeper_nest',
+        col: 10, row: 20,
+        radius: 2,
+        items: ['GUNPOWDER'],
+        cooldown: 8000,
+        requiredTool: 'iron_sword',
+        xpPerGather: 80,
+        skillType: 'combat',
     },
 };
 

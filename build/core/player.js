@@ -67,6 +67,8 @@ class Player {
     // Give starter items
     this.addItem('BREAD', 5);
     this.addItem('HEALTH_POTION', 2);
+    this.addItem('IRON_SWORD', 1);
+    this.addItem('WOODEN_AXE', 1);
   }
 
   // Add an item to inventory
