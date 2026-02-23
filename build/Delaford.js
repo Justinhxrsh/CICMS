@@ -229,11 +229,79 @@ class Delaford {
           if (result.success) this.sendInventoryUpdate(ws, player);
           break;
         }
+      case 'COMMAND':
+        {
+          this.handleCommand(ws, data);
+          break;
+        }
       default:
         (0, _utils.sendMessage)(ws, {
           type: 'ERROR',
           message: `Unknown action: ${action}`
         });
+    }
+  }
+  handleCommand(ws, data) {
+    const player = this.world.players.get(ws.playerId);
+    if (!player) return;
+    const {
+      command,
+      args
+    } = data;
+    if (command === 'give') {
+      var _args$;
+      const itemId = (_args$ = args[0]) === null || _args$ === void 0 ? void 0 : _args$.toUpperCase();
+      const amount = parseInt(args[1] || '1', 10);
+      if (!itemId || !_constants.ITEM_DEFS[itemId]) {
+        return this.sendActionResult(ws, false, `Invalid item: ${args[0]}`);
+      }
+      if (isNaN(amount) || amount <= 0 || amount > 1000) {
+        return this.sendActionResult(ws, false, `Invalid amount: ${args[1]}`);
+      }
+      let added = 0;
+      for (let i = 0; i < amount; i++) {
+        if (player.addItem(itemId)) {
+          added++;
+        } else {
+          break;
+        }
+      }
+      this.sendInventoryUpdate(ws, player);
+      if (added > 0) {
+        this.sendActionResult(ws, true, `Gave ${added}x ${_constants.ITEM_DEFS[itemId].name}.`);
+      } else {
+        this.sendActionResult(ws, false, 'Inventory full.');
+      }
+    } else if (command === 'tp') {
+      const col = parseInt(args[0], 10);
+      const row = parseInt(args[1], 10);
+      if (isNaN(col) || isNaN(row) || col < 0 || col >= _constants.GAME.MAP_COLS || row < 0 || row >= _constants.GAME.MAP_ROWS) {
+        return this.sendActionResult(ws, false, `Invalid coordinates.`);
+      }
+      // Add a little check for basic bounds
+      player.col = col;
+      player.row = row;
+      player.path = []; // stop moving
+      this.sendActionResult(ws, true, `Teleported to ${col}, ${row}.`);
+
+      // Immediately broadcast our movement to everyone else
+      this.broadcast({
+        type: 'WORLD_UPDATE',
+        players: [player.toPublic()],
+        npcs: [],
+        items: []
+      });
+      // And update explicitly our position to ourselves
+      (0, _utils.sendMessage)(ws, {
+        type: 'WORLD_UPDATE',
+        players: [player.toPublic()],
+        npcs: [],
+        items: []
+      });
+    } else if (command === 'help') {
+      this.sendActionResult(ws, true, 'Commands: /give <item_id> [amount], /tp <x> <y>');
+    } else {
+      this.sendActionResult(ws, false, `Unknown command: ${command}`);
     }
   }
   handleInteract(ws, data) {

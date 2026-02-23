@@ -60,8 +60,9 @@ class RespawnTracker {
       var _WORLD_MAP$row;
       const col = this.zone.col + Math.floor(Math.random() * (this.zone.radius * 2 + 1)) - this.zone.radius;
       const row = this.zone.row + Math.floor(Math.random() * (this.zone.radius * 2 + 1)) - this.zone.radius;
-      if ((0, _utils.isTileWalkable)(col, row) || ((_WORLD_MAP$row = _constants.WORLD_MAP[row]) === null || _WORLD_MAP$row === void 0 ? void 0 : _WORLD_MAP$row[col]) === 2) {
-        // allow on mountain tiles for mines
+      const tileType = (_WORLD_MAP$row = _constants.WORLD_MAP[row]) === null || _WORLD_MAP$row === void 0 ? void 0 : _WORLD_MAP$row[col];
+      if ((0, _utils.isTileWalkable)(col, row) || tileType === 2 || tileType === 3) {
+        // allow on mountain/mine (2) and tree (3) tiles
         const item = new WorldItem(itemKey, col, row);
         this.items.push(item);
         world.worldItems.set(item.id, item);

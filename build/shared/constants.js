@@ -131,6 +131,30 @@ const ITEM_DEFS = exports.ITEM_DEFS = {
     emoji: '👢'
   },
   // Tools
+  WOODEN_AXE: {
+    id: 'wooden_axe',
+    name: 'Wooden Axe',
+    type: 'tool',
+    slot: 'tool',
+    value: 100,
+    stats: {
+      woodcutting: 5
+    },
+    color: '#aa7744',
+    emoji: '🪓'
+  },
+  SHOVEL: {
+    id: 'shovel',
+    name: 'Shovel',
+    type: 'tool',
+    slot: 'tool',
+    value: 120,
+    stats: {
+      digging: 5
+    },
+    color: '#888899',
+    emoji: '⛏️'
+  },
   PICKAXE: {
     id: 'pickaxe',
     name: 'Pickaxe',
@@ -156,6 +180,33 @@ const ITEM_DEFS = exports.ITEM_DEFS = {
     emoji: '🎣'
   },
   // Resources
+  WOOD: {
+    id: 'wood',
+    name: 'Wood',
+    type: 'resource',
+    value: 15,
+    stackable: true,
+    color: '#8b5a2b',
+    emoji: '🪵'
+  },
+  RUBY: {
+    id: 'ruby',
+    name: 'Ruby',
+    type: 'resource',
+    value: 200,
+    stackable: true,
+    color: '#e0115f',
+    emoji: '🔴'
+  },
+  DIAMOND: {
+    id: 'diamond',
+    name: 'Diamond',
+    type: 'resource',
+    value: 500,
+    stackable: true,
+    color: '#b9f2ff',
+    emoji: '💎'
+  },
   GOLD_ORE: {
     id: 'gold_ore',
     name: 'Gold Ore',
@@ -233,7 +284,7 @@ const NPC_DEFS = exports.NPC_DEFS = {
     type: 'shop',
     color: '#4488cc',
     emoji: '🧔',
-    shop: ['IRON_SWORD', 'BRONZE_DAGGER', 'LEATHER_ARMOR', 'IRON_SHIELD', 'BREAD', 'HEALTH_POTION', 'PICKAXE'],
+    shop: ['IRON_SWORD', 'BRONZE_DAGGER', 'LEATHER_ARMOR', 'IRON_SHIELD', 'BREAD', 'HEALTH_POTION', 'PICKAXE', 'WOODEN_AXE', 'SHOVEL'],
     dialog: 'Welcome to my shop, adventurer! I have fine goods.'
   },
   BANKER: {
@@ -278,6 +329,39 @@ const SHOP_SELL_DISCOUNT = exports.SHOP_SELL_DISCOUNT = 0.5; // Players sell for
 
 // Respawn zones
 const RESPAWN_ZONES = exports.RESPAWN_ZONES = {
+  FOREST_1: {
+    id: 'forest_1',
+    col: 14,
+    row: 2,
+    radius: 2,
+    items: ['WOOD'],
+    cooldown: 5000,
+    requiredTool: 'wooden_axe',
+    xpPerGather: 20,
+    skillType: 'woodcutting'
+  },
+  FOREST_2: {
+    id: 'forest_2',
+    col: 26,
+    row: 3,
+    radius: 2,
+    items: ['WOOD'],
+    cooldown: 5000,
+    requiredTool: 'wooden_axe',
+    xpPerGather: 20,
+    skillType: 'woodcutting'
+  },
+  DIG_SITE: {
+    id: 'dig_site',
+    col: 7,
+    row: 8,
+    radius: 2,
+    items: ['RUBY', 'DIAMOND'],
+    cooldown: 12000,
+    requiredTool: 'shovel',
+    xpPerGather: 40,
+    skillType: 'digging'
+  },
   IRON_MINE: {
     id: 'iron_mine',
     col: 5,
@@ -401,4 +485,4 @@ const SPAWN = exports.SPAWN = {
 const XP_TABLE = exports.XP_TABLE = Array.from({
   length: 100
 }, (_, i) => Math.floor(i * i * 100));
-const SKILLS = exports.SKILLS = ['mining', 'fishing', 'smithing', 'cooking', 'combat'];
+const SKILLS = exports.SKILLS = ['mining', 'fishing', 'smithing', 'cooking', 'combat', 'woodcutting', 'digging'];

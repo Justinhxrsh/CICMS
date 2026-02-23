@@ -600,6 +600,9 @@ export default {
     getZoneOption(col, row) {
       // Match to respawn zones
       const zones = {
+        FOREST_1: { col: 14, row: 2, radius: 2, label: '🪓 Chop Wood' },
+        FOREST_2: { col: 26, row: 3, radius: 2, label: '🪓 Chop Wood' },
+        DIG_SITE: { col: 7, row: 8, radius: 2, label: '⛏️ Dig for Gems' },
         IRON_MINE: { col: 5, row: 5, radius: 3, label: '⛏️ Mine Iron Ore' },
         GOLD_MINE: { col: 8, row: 3, radius: 2, label: '⛏️ Mine Gold Ore' },
         FISHING_SPOT: { col: 2, row: 18, radius: 2, label: '🎣 Fish here' },
