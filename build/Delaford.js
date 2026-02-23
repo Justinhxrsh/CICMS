@@ -188,7 +188,7 @@ class Delaford {
       targetCol,
       targetRow
     } = data;
-    const path = (0, _utils.findPath)(player.col, player.row, targetCol, targetRow);
+    const path = (0, _utils.findPath)(player.col, player.row, targetCol, targetRow, (c, r) => this.world.isTileWalkable(c, r));
     if (path.length === 0) {
       (0, _utils.sendMessage)(ws, {
         type: 'ACTION_RESULT',
@@ -218,7 +218,7 @@ class Delaford {
     if (dist <= maxDist) {
       return true;
     } else {
-      const path = (0, _utils.findPath)(player.col, player.row, targetCol, targetRow);
+      const path = (0, _utils.findPath)(player.col, player.row, targetCol, targetRow, (c, r) => this.world.isTileWalkable(c, r));
       if (path.length > 0) {
         player.path = path;
         player.pathIndex = 0;

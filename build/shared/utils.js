@@ -51,50 +51,33 @@ function isTileWalkable(col, row) {
 }
 
 // Simple A* pathfinding
-function findPath(startCol, startRow, endCol, endRow) {
+function findPath(startCol, startRow, endCol, endRow, customIsWalkable = null) {
+  const isWalkable = customIsWalkable || isTileWalkable;
   let targetCol = endCol;
   let targetRow = endRow;
-  if (!isTileWalkable(targetCol, targetRow)) {
-    // Find nearest walkable adjacent tile to target, favoring the one closest to player
-    const adjacent = [{
-      dc: 0,
-      dr: -1
-    }, {
-      dc: 1,
-      dr: 0
-    }, {
-      dc: 0,
-      dr: 1
-    }, {
-      dc: -1,
-      dr: 0
-    }, {
-      dc: 1,
-      dr: -1
-    }, {
-      dc: 1,
-      dr: 1
-    }, {
-      dc: -1,
-      dr: 1
-    }, {
-      dc: -1,
-      dr: -1
-    }];
+  if (!isWalkable(targetCol, targetRow)) {
+    // Find nearest walkable tile to target within a small radius
     let found = false;
     let bestDist = Infinity;
     let bestCol = startCol,
       bestRow = startRow;
-    for (const dir of adjacent) {
-      const nc = targetCol + dir.dc;
-      const nr = targetRow + dir.dr;
-      if (isTileWalkable(nc, nr)) {
-        const distDist = Math.abs(startCol - nc) + Math.abs(startRow - nr);
-        if (distDist < bestDist) {
-          bestDist = distDist;
-          bestCol = nc;
-          bestRow = nr;
-          found = true;
+    const SEARCH_RADIUS = 3;
+    for (let dr = -SEARCH_RADIUS; dr <= SEARCH_RADIUS; dr++) {
+      for (let dc = -SEARCH_RADIUS; dc <= SEARCH_RADIUS; dc++) {
+        if (dr === 0 && dc === 0) continue;
+        const nc = targetCol + dc;
+        const nr = targetRow + dr;
+        if (isWalkable(nc, nr)) {
+          const distToPlayer = Math.abs(startCol - nc) + Math.abs(startRow - nr);
+          const distToTarget = Math.abs(targetCol - nc) + Math.abs(targetRow - nr);
+          // Favor tiles that are close to where we clicked, then close to us
+          const score = distToTarget * 2 + distToPlayer;
+          if (score < bestDist) {
+            bestDist = score;
+            bestCol = nc;
+            bestRow = nr;
+            found = true;
+          }
         }
       }
     }
@@ -103,7 +86,8 @@ function findPath(startCol, startRow, endCol, endRow) {
     targetRow = bestRow;
   }
   if (startCol === targetCol && startRow === targetRow) return [];
-  const openSet = new Map();
+  const openSet = [];
+  const openSetMap = new Map(); // For fast lookup
   const closedSet = new Set();
   const startKey = `${startCol},${startRow}`;
   const endKey = `${targetCol},${targetRow}`;
@@ -115,7 +99,8 @@ function findPath(startCol, startRow, endCol, endRow) {
     parent: null
   };
   startNode.f = startNode.g + startNode.h;
-  openSet.set(startKey, startNode);
+  openSet.push(startNode);
+  openSetMap.set(startKey, startNode);
   const dirs = [{
     dc: 0,
     dr: -1
@@ -128,25 +113,24 @@ function findPath(startCol, startRow, endCol, endRow) {
   }, {
     dc: -1,
     dr: 0
-  }
-  // Diagonals (optional, more natural movement)
-  // { dc: 1, dr: -1 }, { dc: 1, dr: 1 }, { dc: -1, dr: 1 }, { dc: -1, dr: -1 },
-  ];
+  }];
   let iterations = 0;
-  const MAX_ITER = 2000;
-  while (openSet.size > 0 && iterations < MAX_ITER) {
+  const MAX_ITER = 10000;
+  while (openSet.length > 0 && iterations < MAX_ITER) {
     iterations++;
 
-    // Find lowest f
-    let current = null;
-    let lowestF = Infinity;
-    for (const [, node] of openSet) {
-      if (node.f < lowestF) {
-        lowestF = node.f;
-        current = node;
+    // Get node with lowest f
+    // Sort is overkill for small lists but faster than linear scan in some cases if we pop
+    // Better: linear scan but minimize calls
+    let lowestIdx = 0;
+    for (let i = 1; i < openSet.length; i++) {
+      if (openSet[i].f < openSet[lowestIdx].f) {
+        lowestIdx = i;
       }
     }
+    const current = openSet.splice(lowestIdx, 1)[0];
     const currKey = `${current.col},${current.row}`;
+    openSetMap.delete(currKey);
     if (currKey === endKey) {
       // Reconstruct path
       const path = [];
@@ -160,32 +144,33 @@ function findPath(startCol, startRow, endCol, endRow) {
       }
       return path;
     }
-    openSet.delete(currKey);
     closedSet.add(currKey);
     for (const dir of dirs) {
       const nc = current.col + dir.dc;
       const nr = current.row + dir.dr;
       const nKey = `${nc},${nr}`;
-      if (closedSet.has(nKey) || !isTileWalkable(nc, nr)) continue;
+      if (closedSet.has(nKey) || !isWalkable(nc, nr)) continue;
       const g = current.g + 1;
       const h = Math.abs(targetCol - nc) + Math.abs(targetRow - nr);
       const f = g + h;
-      if (openSet.has(nKey)) {
-        const existing = openSet.get(nKey);
+      const existing = openSetMap.get(nKey);
+      if (existing) {
         if (g < existing.g) {
           existing.g = g;
           existing.f = f;
           existing.parent = current;
         }
       } else {
-        openSet.set(nKey, {
+        const newNode = {
           col: nc,
           row: nr,
           g,
           h,
           f,
           parent: current
-        });
+        };
+        openSet.push(newNode);
+        openSetMap.set(nKey, newNode);
       }
     }
   }

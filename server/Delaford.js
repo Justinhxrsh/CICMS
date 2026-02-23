@@ -178,7 +178,7 @@ export class Delaford {
 
         const { targetCol, targetRow } = data;
 
-        const path = findPath(player.col, player.row, targetCol, targetRow);
+        const path = findPath(player.col, player.row, targetCol, targetRow, (c, r) => this.world.isTileWalkable(c, r));
         if (path.length === 0) {
             sendMessage(ws, { type: 'ACTION_RESULT', success: false, message: 'Cannot reach that location.' });
             return;
@@ -197,7 +197,7 @@ export class Delaford {
         if (dist <= maxDist) {
             return true;
         } else {
-            const path = findPath(player.col, player.row, targetCol, targetRow);
+            const path = findPath(player.col, player.row, targetCol, targetRow, (c, r) => this.world.isTileWalkable(c, r));
             if (path.length > 0) {
                 player.path = path;
                 player.pathIndex = 0;

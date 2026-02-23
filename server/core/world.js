@@ -230,4 +230,18 @@ export class World {
             }
         };
     }
+
+    isTileWalkable(col, row) {
+        if (col < 0 || row < 0 || col >= GAME.MAP_COLS || row >= GAME.MAP_ROWS) return false;
+
+        // Check dynamic tiles first (player placed blocks)
+        const dyTile = this.survival.dynamicTiles.get(`${col},${row}`);
+        if (dyTile !== undefined) {
+            return WALKABLE_TILES.has(dyTile);
+        }
+
+        // Base map
+        const tile = WORLD_MAP[row][col];
+        return WALKABLE_TILES.has(tile);
+    }
 }
